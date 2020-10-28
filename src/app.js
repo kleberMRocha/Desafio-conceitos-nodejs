@@ -48,7 +48,7 @@ app
 
    repositories.splice(index,1); 
 
-   if(index < 0) return response.status(400).json({message:"repositorie not found"});
+   if(index < 0) return response.status(400).json({message:"repository not found"});
 
    return response.status(204).json({message:'repository has been deleted'})
     
