@@ -13,9 +13,10 @@ const repositories = [];
 app
 .get('/repositories',(request,response)=>response.status(200).json(repositories))
 .post('/repositories',(request,response)=>{
-   const {id,title,url,techs} = request.body;
-    if(!isUuid(id))return response.status(400).json({error:"invalid ID"}); 
-    repositories.push(
+   const {title,url,techs} = request.body;
+   const id = uuid();
+   console.log(isUuid(id));
+   repositories.push(
         { 
             id,
             title,
@@ -24,17 +25,18 @@ app
             likes: 0 
         });
 
-    return response.status(201).json({message:'repository has been registered'});
+    return response.status(201).json(repositories[repositories.length -1]);
 })
 .post('/repositories/:id/like',(request,response) => {
-  const {id} = request.params;
-  repositories.find(repositorie =>{
-    repositorie.id == id 
-    ? repositorie.likes = repositorie.likes+=1 
-    : null;
+ const {id} = request.params;
+
+ let repositoriesUpdated = repositories.find(repository =>{
+   return  repository.id == id && (repository.likes = repository.likes+=1 );
   });
 
-  return response.status(201).json({message:`Likes +1`})
+  return repositoriesUpdated 
+  ? response.status(200).json(repositoriesUpdated) 
+  : response.status(400).json({error:''})
 
 })
 .delete('/repositories/:id',(request,response)=>{
@@ -46,9 +48,9 @@ app
 
    repositories.splice(index,1); 
 
-   if(index < 0) return response.status(401).json({message:"repositorie not found"});
+   if(index < 0) return response.status(400).json({message:"repositorie not found"});
 
-   return response.status(202).json({message:'repository has been deleted'})
+   return response.status(204).json({message:'repository has been deleted'})
     
 
 })
@@ -56,7 +58,9 @@ app
     const { id } = request.params;
     const {title,url,techs} = request.body;
 
-    const element = repositories.find(repositorie => repositorie.id == id );
+    const element = repositories.find(repository => repository.id == id );
+
+    if(!element)return response.status(400).json({error:'repository not found'})
 
     const index = repositories.indexOf(element);
 
@@ -64,7 +68,7 @@ app
     repositories[index].url = url;
     repositories[index].techs = techs;
 
-    return  response.status(200).json({message:'Data has been updated'})
+    return  response.status(200).json(repositories[index]);
 
 });
 
